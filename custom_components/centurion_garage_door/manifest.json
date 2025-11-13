@@ -1,0 +1,12 @@
+{
+    "domain": "centurion_garage_door",
+    "name": "Centurion Garage Door",
+    "codeowners": [
+        "@jitteryjuice"
+    ],
+    "config_flow": true,
+    "documentation": "https://github.com/jitteryjuice/centurion_garage_door",
+    "iot_class": "local_polling",
+    "issue_tracker": "https://github.com/jitteryjuice/centurion_garage_door/issues",
+    "version": "0.1.0"
+}
