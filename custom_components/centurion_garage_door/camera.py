@@ -50,6 +50,13 @@ class CenturionGarageCamera(CenturionGarageEntity, MjpegCamera):
         return "Centurion Garage Camera"
 
     @property
+    def extra_state_attributes(self) -> dict:
+        """Return entity specific state attributes."""
+        return {
+            "ip_address": self.coordinator.api_client.ip_address,
+        }
+
+    @property
     def device_info(self) -> dict:
         """Return device information for Home Assistant."""
         api_client = self.coordinator.api_client

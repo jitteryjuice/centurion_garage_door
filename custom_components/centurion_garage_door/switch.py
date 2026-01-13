@@ -1,7 +1,6 @@
 """Switch platform for Centurion Garage Door integration."""
 
 import logging
-import contextlib
 from datetime import timedelta
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -41,7 +40,6 @@ class CenturionBaseSwitch(CenturionGarageEntity, SwitchEntity):
         """Initialize the base switch class."""
         super().__init__(coordinator)
         self.coordinator = coordinator
-        self._is_on: bool = False
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -68,7 +66,10 @@ class CenturionLampSwitch(CenturionBaseSwitch):
     @property
     def is_on(self) -> bool:
         """Return True if the lamp is on."""
-        return self._is_on
+        if self.coordinator.data:
+            lamp_state = self.coordinator.data.get("lamp", "off")
+            return lamp_state.lower() == "on"
+        return False
 
     @property
     def icon(self) -> str:
@@ -79,25 +80,13 @@ class CenturionLampSwitch(CenturionBaseSwitch):
         """Turn on the lamp."""
         api_client = self.coordinator.api_client
         await api_client.lamp_on()
-        self._is_on = True
-        self.async_schedule_update_ha_state()
+        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self) -> None:
         """Turn off the lamp."""
         api_client = self.coordinator.api_client
         await api_client.lamp_off()
-        self._is_on = False
-        self.async_schedule_update_ha_state()
-
-    async def async_update(self) -> None:
-        """Fetch the latest lamp state from the device."""
-        api_client = self.coordinator.api_client
-        with contextlib.suppress(Exception):
-            lamp_state = await api_client.lamp_status()
-            if lamp_state == "on":
-                self._is_on = True
-            else:
-                self._is_on = False
+        await self.coordinator.async_request_refresh()
 
 
 class CenturionVacationSwitch(CenturionBaseSwitch):
@@ -112,7 +101,10 @@ class CenturionVacationSwitch(CenturionBaseSwitch):
     @property
     def is_on(self) -> bool:
         """Return True if vacation mode is on."""
-        return self._is_on
+        if self.coordinator.data:
+            vacation_state = self.coordinator.data.get("vacation", "off")
+            return vacation_state.lower() == "on"
+        return False
 
     @property
     def icon(self) -> str:
@@ -123,22 +115,10 @@ class CenturionVacationSwitch(CenturionBaseSwitch):
         """Turn on vacation mode."""
         api_client = self.coordinator.api_client
         await api_client.vacation_on()
-        self._is_on = True
-        self.async_schedule_update_ha_state()
+        await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self) -> None:
         """Turn off vacation mode."""
         api_client = self.coordinator.api_client
         await api_client.vacation_off()
-        self._is_on = False
-        self.async_schedule_update_ha_state()
-
-    async def async_update(self) -> None:
-        """Fetch the latest vacation mode state from the device."""
-        api_client = self.coordinator.api_client
-        with contextlib.suppress(Exception):
-            vacation_state = await api_client.vacation_status()
-            if vacation_state == "on":
-                self._is_on = True
-            else:
-                self._is_on = False
+        await self.coordinator.async_request_refresh()
