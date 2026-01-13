@@ -50,38 +50,6 @@ class CenturionGarageApiClient:
                 _verify_response_or_raise(response)
                 return await response.json()
 
-    async def get_door_state(self) -> str:
-        """Get the current state of the garage door."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&status=json") as response:
-                _verify_response_or_raise(response)
-                data = await response.json()
-                return data.get("door", "unknown").lower()
-
-    async def wifi_dbm(self) -> str:
-        """Get the current state of the garage door wifi signal."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&status=json") as response:
-                _verify_response_or_raise(response)
-                data = await response.json()
-                return data.get("wdBm", "unknown").lower()
-
-    async def lamp_status(self) -> str:
-        """Get the current state of the garage door lamp status."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&status=json") as response:
-                _verify_response_or_raise(response)
-                data = await response.json()
-                return data.get("lamp", "unknown").lower()
-
-    async def vacation_status(self) -> str:
-        """Get the current state of the garage door vacation status."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&status=json") as response:
-                _verify_response_or_raise(response)
-                data = await response.json()
-                return data.get("vacation", "unknown").lower()
-
     async def open_door(self) -> None:
         """Send command to open the garage door."""
         async with async_timeout.timeout(10):

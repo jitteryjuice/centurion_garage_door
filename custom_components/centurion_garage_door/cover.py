@@ -1,7 +1,6 @@
 """Cover platform for Centurion Garage Door integration."""
 
 import logging
-import contextlib
 from homeassistant.components.cover import CoverEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -42,7 +41,6 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
         """Initialize CenturionGarageDoor entity."""
         super().__init__(coordinator)
         self.coordinator: CenturionGarageDataUpdateCoordinator = coordinator
-        self._state = STATE_CLOSED
         self._attr_unique_id = "centurion_garage_cover"
 
     @property
@@ -66,25 +64,25 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
         """Return supported features (open, close, stop)."""
         return 7
 
-    async def async_update(self) -> None:
-        """Fetch the latest state from the device."""
-        api_client = self.coordinator.api_client
-        with contextlib.suppress(Exception):
-            door_state = await api_client.get_door_state()
-            if "opening" in door_state:
-                self._state = STATE_OPENING
-            elif "closing" in door_state:
-                self._state = STATE_CLOSING
-            elif "opened" in door_state:
-                self._state = STATE_OPEN
-            elif "closed" in door_state:
-                self._state = STATE_CLOSED
-            elif "stop" in door_state:
-                self._state = STATE_PAUSED
-            elif "error" in door_state:
-                self._state = STATE_PROBLEM
-            else:
-                self._state = STATE_UNKNOWN
+    @property
+    def _door_state(self) -> str:
+        """Get current door state from coordinator data."""
+        if self.coordinator.data:
+            door_state = self.coordinator.data.get("door", "unknown")
+            door_state_lower = str(door_state).lower()
+            if "opening" in door_state_lower:
+                return STATE_OPENING
+            elif "closing" in door_state_lower:
+                return STATE_CLOSING
+            elif "opened" in door_state_lower or "open" in door_state_lower:
+                return STATE_OPEN
+            elif "closed" in door_state_lower:
+                return STATE_CLOSED
+            elif "stop" in door_state_lower:
+                return STATE_PAUSED
+            elif "error" in door_state_lower:
+                return STATE_PROBLEM
+        return STATE_UNKNOWN
 
     @property
     def name(self) -> str:
@@ -94,31 +92,27 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
     @property
     def is_closed(self) -> bool:
         """Return True if the door is closed."""
-        return self._state == STATE_CLOSED
+        return self._door_state == STATE_CLOSED
 
     @property
     def state(self) -> str:
         """Return the current state."""
-        return self._state if self._state is not None else "unknown"
+        return self._door_state
 
     async def async_open_cover(self) -> None:
         """Open the garage door."""
         api_client = self.coordinator.api_client
-        with contextlib.suppress(Exception):
-            await api_client.open_door()
-            self._state = STATE_OPEN
-            self.async_schedule_update_ha_state()
+        await api_client.open_door()
+        await self.coordinator.async_request_refresh()
 
     async def async_close_cover(self) -> None:
         """Close the garage door."""
         api_client = self.coordinator.api_client
-        with contextlib.suppress(Exception):
-            await api_client.close_door()
-            self._state = STATE_CLOSED
-            self.async_schedule_update_ha_state()
+        await api_client.close_door()
+        await self.coordinator.async_request_refresh()
 
     async def async_stop_cover(self) -> None:
         """Stop the garage door."""
         api_client = self.coordinator.api_client
-        with contextlib.suppress(Exception):
-            await api_client.stop_door()
+        await api_client.stop_door()
+        await self.coordinator.async_request_refresh()
