@@ -6,7 +6,15 @@ from homeassistant.components.cover import CoverEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.const import STATE_CLOSED, STATE_OPEN, STATE_OPENING, STATE_CLOSING
+from homeassistant.const import (
+    STATE_CLOSED,
+    STATE_OPEN,
+    STATE_OPENING,
+    STATE_CLOSING,
+    STATE_PROBLEM,
+    STATE_UNKNOWN,
+    STATE_PAUSED,
+)
 from custom_components.centurion_garage_door.coordinator import (
     CenturionGarageDataUpdateCoordinator,
 )
@@ -67,14 +75,16 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
                 self._state = STATE_OPENING
             elif "closing" in door_state:
                 self._state = STATE_CLOSING
-            elif "open" in door_state:
+            elif "opened" in door_state:
                 self._state = STATE_OPEN
-            elif "close" in door_state:
+            elif "closed" in door_state:
                 self._state = STATE_CLOSED
-            elif "stopped" in door_state or "error" in door_state:
-                self._state = None
+            elif "stop" in door_state:
+                self._state = STATE_PAUSED
+            elif "error" in door_state:
+                self._state = STATE_PROBLEM
             else:
-                self._state = None
+                self._state = STATE_UNKNOWN
 
     @property
     def name(self) -> str:

@@ -1,6 +1,7 @@
 """Switch platform for Centurion Garage Door integration."""
 
 import logging
+import contextlib
 from datetime import timedelta
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
@@ -90,7 +91,13 @@ class CenturionLampSwitch(CenturionBaseSwitch):
 
     async def async_update(self) -> None:
         """Fetch the latest lamp state from the device."""
-        # If your API client supports lamp state, implement here
+        api_client = self.coordinator.api_client
+        with contextlib.suppress(Exception):
+            lamp_state = await api_client.lamp_status()
+            if lamp_state == "on":
+                self._is_on = True
+            else:
+                self._is_on = False
 
 
 class CenturionVacationSwitch(CenturionBaseSwitch):
@@ -128,4 +135,10 @@ class CenturionVacationSwitch(CenturionBaseSwitch):
 
     async def async_update(self) -> None:
         """Fetch the latest vacation mode state from the device."""
-        # If your API client supports vacation state, implement here
+        api_client = self.coordinator.api_client
+        with contextlib.suppress(Exception):
+            vacation_state = await api_client.vacation_status()
+            if vacation_state == "on":
+                self._is_on = True
+            else:
+                self._is_on = False
