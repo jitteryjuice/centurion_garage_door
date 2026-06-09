@@ -15,6 +15,7 @@ from homeassistant.const import SIGNAL_STRENGTH_DECIBELS_MILLIWATT
 from homeassistant.helpers.device_registry import DeviceInfo
 
 from .const import DOMAIN
+from .door import parse_door_status
 from .entity import CenturionGarageEntity
 
 if TYPE_CHECKING:
@@ -40,6 +41,10 @@ async def async_setup_entry(
         [
             CenturionWiFiSignalSensor(coordinator),
             CenturionDoorOperationCounterSensor(coordinator),
+            CenturionDoorMessageSensor(coordinator),
+            CenturionErrorCodeSensor(coordinator),
+            CenturionCameraStatusSensor(coordinator),
+            CenturionDoorTimestampSensor(coordinator),
         ]
     )
 
@@ -100,6 +105,7 @@ class CenturionDoorOperationCounterSensor(CenturionBaseSensor):
         self._attr_unique_id = "centurion_door_operation_counter"
         self._attr_name = "Cycles"
         self._attr_state_class = SensorStateClass.TOTAL_INCREASING
+        self._attr_native_unit_of_measurement = "operations"
         self._attr_icon = "mdi:counter"
 
     @property
@@ -112,4 +118,86 @@ class CenturionDoorOperationCounterSensor(CenturionBaseSensor):
                     return int(value)
                 except (ValueError, TypeError):
                     return None
+        return None
+
+
+class CenturionDoorMessageSensor(CenturionBaseSensor):
+    """Centurion Garage Door message sensor."""
+
+    def __init__(self, coordinator: CenturionGarageDataUpdateCoordinator) -> None:
+        """Initialize the door message sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = "centurion_door_message"
+        self._attr_name = "Door Message"
+        self._attr_icon = "mdi:garage-alert"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the secondary door message reported by the API."""
+        if self.coordinator.data:
+            _, message = parse_door_status(self.coordinator.data.get("door"))
+            return message
+        return None
+
+
+class CenturionErrorCodeSensor(CenturionBaseSensor):
+    """Centurion Garage Door error code sensor."""
+
+    def __init__(self, coordinator: CenturionGarageDataUpdateCoordinator) -> None:
+        """Initialize the error code sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = "centurion_error_code"
+        self._attr_name = "Error Code"
+        self._attr_icon = "mdi:alert-circle-outline"
+
+    @property
+    def native_value(self) -> int | str | None:
+        """Return the current error code."""
+        if self.coordinator.data:
+            value = self.coordinator.data.get("error")
+            if value is not None:
+                try:
+                    return int(value)
+                except (ValueError, TypeError):
+                    return str(value)
+        return None
+
+
+class CenturionCameraStatusSensor(CenturionBaseSensor):
+    """Centurion Garage Door camera status sensor."""
+
+    def __init__(self, coordinator: CenturionGarageDataUpdateCoordinator) -> None:
+        """Initialize the camera status sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = "centurion_camera_status"
+        self._attr_name = "Camera Status"
+        self._attr_icon = "mdi:cctv"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the camera status reported by the API."""
+        if self.coordinator.data:
+            value = self.coordinator.data.get("camera")
+            if value is not None:
+                return str(value)
+        return None
+
+
+class CenturionDoorTimestampSensor(CenturionBaseSensor):
+    """Centurion Garage Door door timestamp sensor."""
+
+    def __init__(self, coordinator: CenturionGarageDataUpdateCoordinator) -> None:
+        """Initialize the door timestamp sensor."""
+        super().__init__(coordinator)
+        self._attr_unique_id = "centurion_door_timestamp"
+        self._attr_name = "Door Event Timestamp"
+        self._attr_icon = "mdi:clock-outline"
+
+    @property
+    def native_value(self) -> str | None:
+        """Return the door timestamp reported by the API."""
+        if self.coordinator.data:
+            value = self.coordinator.data.get("dt")
+            if value is not None:
+                return str(value)
         return None

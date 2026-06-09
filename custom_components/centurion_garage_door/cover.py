@@ -19,6 +19,7 @@ from custom_components.centurion_garage_door.coordinator import (
 )
 from .entity import CenturionGarageEntity
 from .const import DOMAIN
+from .door import parse_door_status
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -69,20 +70,33 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
         """Get current door state from coordinator data."""
         if self.coordinator.data:
             door_state = self.coordinator.data.get("door", "unknown")
-            door_state_lower = str(door_state).lower()
-            if "opening" in door_state_lower:
+            primary_state, _ = parse_door_status(door_state)
+            if primary_state == "opening":
                 return STATE_OPENING
-            elif "closing" in door_state_lower:
+            elif primary_state == "closing":
                 return STATE_CLOSING
-            elif "opened" in door_state_lower or "open" in door_state_lower:
+            elif primary_state in {"opened", "open"}:
                 return STATE_OPEN
-            elif "closed" in door_state_lower:
+            elif primary_state in {"closed", "close"}:
                 return STATE_CLOSED
-            elif "stop" in door_state_lower:
+            elif primary_state in {"stopped", "stop"}:
                 return STATE_PAUSED
-            elif "error" in door_state_lower:
+            elif "error" in str(door_state).lower():
                 return STATE_PROBLEM
         return STATE_UNKNOWN
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return entity specific state attributes."""
+        raw_door_state = None
+        door_message = None
+        if self.coordinator.data:
+            raw_door_state = self.coordinator.data.get("door")
+            _, door_message = parse_door_status(raw_door_state)
+        return {
+            "raw_door": raw_door_state,
+            "door_message": door_message,
+        }
 
     @property
     def name(self) -> str:

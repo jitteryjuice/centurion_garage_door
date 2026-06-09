@@ -44,6 +44,26 @@ Once configured, your garage door will appear as a cover entity in Home Assistan
 - Use it in automations and scripts
 - Monitor the door status
 
+## Entities
+
+The integration exposes the following entities:
+
+- Garage door cover
+  - State is parsed from the primary value before any `|` separator in the API
+    `door` field.
+  - Attributes:
+    - `raw_door`: Full API door value, for example `Closed|Opener reset`
+    - `door_message`: Secondary door message after `|`, for example
+      `Opener reset`
+- Lamp switch
+- Vacation mode switch
+- WiFi signal strength sensor
+- Cycle counter sensor
+- Door message sensor
+- Error code sensor
+- Camera status sensor
+- Door event timestamp sensor
+
 ## Support
 
 For issues and feature requests, please use the GitHub issue tracker.
