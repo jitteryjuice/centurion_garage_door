@@ -49,12 +49,13 @@ Once configured, your garage door will appear as a cover entity in Home Assistan
 The integration exposes the following entities:
 
 - Garage door cover
-  - State is parsed from the primary value before any `|` separator in the API
-    `door` field.
+  - State is parsed from the primary value before any `|` separator or known
+    state prefix in the `State. Message` API `door` field format.
   - Attributes:
-    - `raw_door`: Full API door value, for example `Closed|Opener reset`
-    - `door_message`: Secondary door message after `|`, for example
-      `Opener reset`
+    - `raw_door`: Full API door value, for example `Closed|Opener reset` or
+      `Opened. Intruder Alert`
+    - `door_message`: Secondary door message after `|` or `. `, for example
+      `Opener reset` or `Intruder Alert`
 - Lamp switch
 - Vacation mode switch
 - WiFi signal strength sensor

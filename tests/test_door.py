@@ -50,6 +50,20 @@ class DoorStatusParsingTest(unittest.TestCase):
             ("closed", "Opener reset|manual"),
         )
 
+    def test_opened_with_dot_message(self) -> None:
+        """Dot-separated alert messages keep the door state parseable."""
+        self.check_parse(
+            "Opened. Intruder Alert",
+            ("opened", "Intruder Alert"),
+        )
+
+    def test_unknown_dotted_text_is_not_split(self) -> None:
+        """Only known door states use the dot-separated message format."""
+        self.check_parse(
+            "Controller rebooted. Waiting for status",
+            ("controller rebooted. waiting for status", None),
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
