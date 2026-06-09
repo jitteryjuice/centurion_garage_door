@@ -1,25 +1,28 @@
 """Cover platform for Centurion Garage Door integration."""
 
 import logging
+
 from homeassistant.components.cover import CoverEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
-from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.const import (
     STATE_CLOSED,
+    STATE_CLOSING,
     STATE_OPEN,
     STATE_OPENING,
-    STATE_CLOSING,
+    STATE_PAUSED,
     STATE_PROBLEM,
     STATE_UNKNOWN,
-    STATE_PAUSED,
 )
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from custom_components.centurion_garage_door.coordinator import (
     CenturionGarageDataUpdateCoordinator,
 )
-from .entity import CenturionGarageEntity
+
 from .const import DOMAIN
 from .door import parse_door_status
+from .entity import CenturionGarageEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -68,21 +71,25 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
     @property
     def _door_state(self) -> str:
         """Get current door state from coordinator data."""
-        if self.coordinator.data:
-            door_state = self.coordinator.data.get("door", "unknown")
-            primary_state, _ = parse_door_status(door_state)
-            if primary_state == "opening":
-                return STATE_OPENING
-            elif primary_state == "closing":
-                return STATE_CLOSING
-            elif primary_state in {"opened", "open"}:
-                return STATE_OPEN
-            elif primary_state in {"closed", "close"}:
-                return STATE_CLOSED
-            elif primary_state in {"stopped", "stop"}:
-                return STATE_PAUSED
-            elif "error" in str(door_state).lower():
-                return STATE_PROBLEM
+        if not self.coordinator.data:
+            return STATE_UNKNOWN
+
+        door_state = self.coordinator.data.get("door", "unknown")
+        primary_state, _ = parse_door_status(door_state)
+        state_map = {
+            "opening": STATE_OPENING,
+            "closing": STATE_CLOSING,
+            "opened": STATE_OPEN,
+            "open": STATE_OPEN,
+            "closed": STATE_CLOSED,
+            "close": STATE_CLOSED,
+            "stopped": STATE_PAUSED,
+            "stop": STATE_PAUSED,
+        }
+        if primary_state in state_map:
+            return state_map[primary_state]
+        if "error" in str(door_state).lower():
+            return STATE_PROBLEM
         return STATE_UNKNOWN
 
     @property

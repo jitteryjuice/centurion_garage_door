@@ -2,16 +2,19 @@
 
 import logging
 from datetime import timedelta
+
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from custom_components.centurion_garage_door.coordinator import (
     CenturionGarageDataUpdateCoordinator,
 )
-from .entity import CenturionGarageEntity
+
 from .const import DOMAIN
+from .entity import CenturionGarageEntity
 
 SCAN_INTERVAL = timedelta(seconds=30)
 _LOGGER = logging.getLogger(__name__)

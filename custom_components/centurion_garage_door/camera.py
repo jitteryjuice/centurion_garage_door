@@ -1,15 +1,18 @@
 """Camera platform for Centurion Garage Door integration."""
 
+import logging
+
 from homeassistant.components.mjpeg.camera import MjpegCamera
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 from custom_components.centurion_garage_door.coordinator import (
     CenturionGarageDataUpdateCoordinator,
 )
-from .entity import CenturionGarageEntity
+
 from .const import DOMAIN
-import logging
+from .entity import CenturionGarageEntity
 
 _LOGGER = logging.getLogger(__name__)
 

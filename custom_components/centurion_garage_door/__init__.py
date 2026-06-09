@@ -1,6 +1,8 @@
 """Centurion Garage Door custom integration package."""
 
 from __future__ import annotations
+
+import logging
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -9,14 +11,13 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.loader import async_get_loaded_integration
 
 from .api import CenturionGarageApiClient
-import logging
-from .const import DOMAIN, CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL
+from .const import CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL, DOMAIN
 from .coordinator import CenturionGarageDataUpdateCoordinator
 from .data import CenturionGarageRuntimeData
 
 if TYPE_CHECKING:
-    from homeassistant.core import HomeAssistant
     from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
 
 PLATFORMS: list[Platform] = [
     Platform.COVER,

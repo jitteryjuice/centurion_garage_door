@@ -1,19 +1,23 @@
 """DataUpdateCoordinator for Centurion Garage Door."""
 
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
-from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
 from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
+
 from .api import (
+    CenturionGarageApiClient,
     CenturionGarageApiClientAuthenticationError,
     CenturionGarageApiClientError,
-    CenturionGarageApiClient,
 )
 
 if TYPE_CHECKING:
-    from homeassistant.core import HomeAssistant
-    from datetime import timedelta
     import logging
+    from datetime import timedelta
+
+    from homeassistant.core import HomeAssistant
 
 
 class CenturionGarageDataUpdateCoordinator(DataUpdateCoordinator):

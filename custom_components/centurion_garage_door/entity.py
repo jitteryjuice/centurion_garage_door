@@ -5,11 +5,6 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-)
-
 
 class CenturionGarageEntity(CoordinatorEntity):
     """Base entity for Centurion Garage Door integration."""

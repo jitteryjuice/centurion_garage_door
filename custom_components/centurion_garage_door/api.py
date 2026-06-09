@@ -15,18 +15,24 @@ class CenturionGarageApiClientCommunicationError(CenturionGarageApiClientError):
 class CenturionGarageApiClientAuthenticationError(CenturionGarageApiClientError):
     """Exception for authentication errors with Centurion Garage API client."""
 
+    def __init__(self) -> None:
+        """Initialize the authentication error."""
+        super().__init__("Invalid credentials")
+
 
 def _verify_response_or_raise(response: aiohttp.ClientResponse) -> None:
     """Raise for HTTP errors or authentication failures."""
     if response.status in (401, 403):
-        raise CenturionGarageApiClientAuthenticationError("Invalid credentials")
+        raise CenturionGarageApiClientAuthenticationError
     response.raise_for_status()
 
 
 class CenturionGarageApiClient:
     """API client for Centurion Garage Door device."""
 
-    def __init__(self, ip_address: str, api_key: str, session: aiohttp.ClientSession):
+    def __init__(
+        self, ip_address: str, api_key: str, session: aiohttp.ClientSession
+    ) -> None:
         """
         Initialize the CenturionGarageApiClient.
 
@@ -34,6 +40,7 @@ class CenturionGarageApiClient:
             ip_address: IP address of the garage door device.
             api_key: API key for authentication.
             session: aiohttp ClientSession for HTTP requests.
+
         """
         self.ip_address = ip_address
         self.api_key = api_key
@@ -45,60 +52,65 @@ class CenturionGarageApiClient:
 
     async def async_get_data(self) -> dict:
         """Get device status as a dictionary."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&status=json") as response:
-                _verify_response_or_raise(response)
-                return await response.json()
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&status=json"
+        ) as response:
+            _verify_response_or_raise(response)
+            return await response.json()
 
     async def open_door(self) -> None:
         """Send command to open the garage door."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&door=open") as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&door=open"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def close_door(self) -> None:
         """Send command to close the garage door."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&door=close") as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&door=close"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def stop_door(self) -> None:
         """Send command to stop the garage door."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&door=stop") as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&door=stop"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def lamp_on(self) -> None:
         """Turn the garage lamp on."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&lamp=on") as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&lamp=on"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def lamp_off(self) -> None:
         """Turn the garage lamp off."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&lamp=off") as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&lamp=off"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def vacation_on(self) -> None:
         """Enable vacation mode."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(f"{self._base_url()}&vacation=on") as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&vacation=on"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def vacation_off(self) -> None:
         """Disable vacation mode."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(
-                f"{self._base_url()}&vacation=off"
-            ) as response:
-                _verify_response_or_raise(response)
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&vacation=off"
+        ) as response:
+            _verify_response_or_raise(response)
 
     async def get_camera_image(self) -> bytes | None:
         """Fetch a snapshot image from the camera, if supported."""
-        async with async_timeout.timeout(10):
-            async with self._session.get(
-                f"{self._base_url()}&camera=snapshot"
-            ) as response:
-                _verify_response_or_raise(response)
-                return await response.read()
+        async with async_timeout.timeout(10), self._session.get(
+            f"{self._base_url()}&camera=snapshot"
+        ) as response:
+            _verify_response_or_raise(response)
+            return await response.read()

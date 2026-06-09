@@ -2,12 +2,13 @@
 
 import voluptuous as vol
 from homeassistant import config_entries
+
 from .const import (
-    DOMAIN,
-    CONF_IP_ADDRESS,
     CONF_API_KEY,
+    CONF_IP_ADDRESS,
     CONF_SCAN_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
+    DOMAIN,
 )
 
 
