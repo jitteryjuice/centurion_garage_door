@@ -50,12 +50,15 @@ The integration exposes the following entities:
 
 - Garage door cover
   - State is parsed from the primary value before any `|` separator or known
-    state prefix in the `State. Message` API `door` field format.
+    state prefix in the `State. Message` and `State by Source` API `door`
+    field formats.
   - Attributes:
     - `raw_door`: Full API door value, for example `Closed|Opener reset` or
       `Opened. Intruder Alert`
     - `door_message`: Secondary door message after `|` or `. `, for example
       `Opener reset` or `Intruder Alert`
+    - `door_source`: Operation source when known, for example
+      `home-assistant` or `Transmitter No. 1`
 - Lamp switch
 - Vacation mode switch
 - WiFi signal strength sensor

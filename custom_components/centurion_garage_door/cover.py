@@ -21,7 +21,7 @@ from custom_components.centurion_garage_door.coordinator import (
 )
 
 from .const import DOMAIN
-from .door import parse_door_status
+from .door import parse_door_source, parse_door_status
 from .entity import CenturionGarageEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -46,6 +46,8 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
         super().__init__(coordinator)
         self.coordinator: CenturionGarageDataUpdateCoordinator = coordinator
         self._attr_unique_id = "centurion_garage_cover"
+        self._last_command_source: str | None = None
+        self._last_command_states: set[str] = set()
 
     @property
     def device_info(self) -> dict:
@@ -93,16 +95,35 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
         return STATE_UNKNOWN
 
     @property
+    def _door_source(self) -> str | None:
+        """Get the reported or locally inferred door operation source."""
+        if not self.coordinator.data:
+            return None
+
+        raw_door_state = self.coordinator.data.get("door")
+        reported_source = parse_door_source(raw_door_state)
+        if reported_source is not None:
+            return reported_source
+
+        if self._door_state in self._last_command_states:
+            return self._last_command_source
+
+        return None
+
+    @property
     def extra_state_attributes(self) -> dict:
         """Return entity specific state attributes."""
         raw_door_state = None
         door_message = None
+        door_source = None
         if self.coordinator.data:
             raw_door_state = self.coordinator.data.get("door")
             _, door_message = parse_door_status(raw_door_state)
+            door_source = self._door_source
         return {
             "raw_door": raw_door_state,
             "door_message": door_message,
+            "door_source": door_source,
         }
 
     @property
@@ -124,16 +145,22 @@ class CenturionGarageDoor(CenturionGarageEntity, CoverEntity):
         """Open the garage door."""
         api_client = self.coordinator.api_client
         await api_client.open_door()
+        self._last_command_source = "home-assistant"
+        self._last_command_states = {STATE_OPENING, STATE_OPEN}
         await self.coordinator.async_request_refresh()
 
     async def async_close_cover(self) -> None:
         """Close the garage door."""
         api_client = self.coordinator.api_client
         await api_client.close_door()
+        self._last_command_source = "home-assistant"
+        self._last_command_states = {STATE_CLOSING, STATE_CLOSED}
         await self.coordinator.async_request_refresh()
 
     async def async_stop_cover(self) -> None:
         """Stop the garage door."""
         api_client = self.coordinator.api_client
         await api_client.stop_door()
+        self._last_command_source = "home-assistant"
+        self._last_command_states = {STATE_PAUSED}
         await self.coordinator.async_request_refresh()

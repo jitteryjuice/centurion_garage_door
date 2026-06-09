@@ -64,6 +64,28 @@ class DoorStatusParsingTest(unittest.TestCase):
             ("controller rebooted. waiting for status", None),
         )
 
+    def test_closed_by_transmitter_uses_closed_state(self) -> None:
+        """Transmitter operation details do not hide the primary door state."""
+        self.check_parse("Closed by transmitter No.1", ("closed", None))
+
+    def test_opened_by_transmitter_uses_opened_state(self) -> None:
+        """Opened transmitter reports remain parseable as open."""
+        self.check_parse("Opened by transmitter No.3", ("opened", None))
+
+    def test_transmitter_source_is_normalized(self) -> None:
+        """Transmitter source values use a consistent display format."""
+        actual = door.parse_door_source("Closed by transmitter No.1")
+        if actual != "Transmitter No. 1":
+            msg = f"Expected transmitter source, got {actual!r}"
+            raise AssertionError(msg)
+
+    def test_home_assistant_source_is_normalized(self) -> None:
+        """Home Assistant source values use a stable slug."""
+        actual = door.parse_door_source("Opened by Home Assistant")
+        if actual != "home-assistant":
+            msg = f"Expected home-assistant source, got {actual!r}"
+            raise AssertionError(msg)
+
 
 if __name__ == "__main__":
     unittest.main()
